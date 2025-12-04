@@ -1,171 +1,148 @@
-🚜 Autonomous Rover
-ROS2 Navigation · SLAM · Obstacle Avoidance · Gazebo Simulation
+# 🚜 Autonomous Rover
 
-This repository contains a complete ROS2-based autonomous rover platform supporting:
+## ROS2 Navigation · SLAM · Obstacle Avoidance · Gazebo Simulation
 
-LiDAR, Ultrasonic, Depth Camera, IMU, GPS
+### This repository contains a complete ROS2-based autonomous rover platform supporting:
 
-SLAM + Localization + Navigation (Nav2)
+- 🎯 LiDAR, Ultrasonic, Depth Camera, IMU, GPS
+- 🗺️ SLAM + Localization + Navigation (Nav2)
+- 🚧 Combined obstacle avoidance
+- 🌍 Gazebo simulation with agricultural world
+- 📊 RViz visualization
 
-Combined obstacle avoidance
+---
 
-Gazebo simulation with agricultural world
+# 📚 Table of Contents
 
-RViz visualization
+- [Requirements](#-requirements)
+- [Hardware Components & Installation](#-hardware-components--installation)
+  - [LiDAR](#1-lidar)
+  - [Ultrasonic Sensors](#2-ultrasonic-sensors)
+  - [Depth Camera](#3-depth-camera)
+  - [IMU](#4-imu-sensor)
+  - [GPS](#5-gps-module)
+- [Package Overview](#-package-overview)
+- [Required Edits](#-required-edits)
+- [Build & Environment Setup](#-build--environment-setup)
+- [Simulation in Gazebo](#-simulation-in-gazebo)
+- [SLAM, Localization & Navigation](#-slam-localization--navigation)
+- [Obstacle Avoidance Pipelines](#-obstacle-avoidance-pipelines)
+- [RViz Visualization](#️-rviz-visualization)
 
-📚 Table of Contents
+---
 
-Requirements
+# 🛠 Requirements
 
-Hardware Components & Installation
+- ROS2 Humble/Jazzy
+- colcon
+- Gazebo Classic / Harmonic
+- Sensor drivers (installed below)
 
-LiDAR
+> **Note:** ROS installation commands intentionally not included.
 
-Ultrasonic Sensors
+[🔝 Back to Top](#-autonomous-rover)
 
-Depth Camera
+---
 
-IMU
+# 🔧 Hardware Components & Installation
 
-GPS
+### 1. LiDAR
 
-Package Overview
-
-rover_obstacle
-
-rover_description
-
-Required Edits (setup.py, CMakeLists)
-
-Build & Environment Setup
-
-Simulation in Gazebo
-
-SLAM, Localization & Navigation
-
-Obstacle Avoidance Pipelines
-
-RViz Visualization
-
-🛠 Requirements
-
-🔝 Back to Top
-
-ROS2 Humble/Jazzy
-
-colcon
-
-Gazebo Classic / Harmonic
-
-Sensor drivers (installed below)
-
-ROS installation commands intentionally not included.
-
-🔧 Hardware Components & Installation
-
-🔝 Back to Top
-
-1. LiDAR
+```bash
 sudo apt install ros-${ROS_DISTRO}-rplidar-ros
 sudo apt install ros-${ROS_DISTRO}-laser-filters
+```
 
-
-Run:
-
+**Run:**
+```bash
 ros2 launch rplidar_ros rplidar.launch.py
+```
 
-2. Ultrasonic Sensors
+### 2. Ultrasonic Sensors
+
+```bash
 sudo apt install python3-gpiozero python3-rpi-lgpio
+```
 
-
-Run:
-
+**Run:**
+```bash
 ros2 run rover_obstacle ultrasonic_reader
+```
 
-3. Depth Camera
+### 3. Depth Camera
+
+```bash
 sudo apt install ros-${ROS_DISTRO}-realsense2-camera
+```
 
-
-Run:
-
+**Run:**
+```bash
 ros2 launch realsense2_camera rs_launch.py
+```
 
-4. IMU Sensor
+### 4. IMU Sensor
+
+```bash
 sudo apt install ros-${ROS_DISTRO}-imu-filter-madgwick
 sudo apt install ros-${ROS_DISTRO}-robot-localization
+```
 
-
-Run:
-
+**Run:**
+```bash
 ros2 run imu_filter_madgwick imu_filter_madgwick_node
+```
 
-5. GPS Module
+### 5. GPS Module
+
+```bash
 sudo apt install ros-${ROS_DISTRO}-nmea-navsat-driver
+```
 
-
-Run:
-
+**Run:**
+```bash
 ros2 run nmea_navsat_driver nmea_serial_driver
+```
 
-📦 Package Overview
+[🔝 Back to Top](#-autonomous-rover)
 
-🔝 Back to Top
+---
 
-rover_obstacle
+## 📦 Package Overview
+
+### `rover_obstacle`
 
 Python nodes:
 
-1️⃣ obstacle_detector_lidar.py
+1. **`obstacle_detector_lidar.py`** - LiDAR obstacle detection (sector-based)
+2. **`obstacle_avoidance_lidar.py`** - Pure LiDAR-based avoidance → `/cmd_vel`
+3. **`ultrasonic_reader.py`** - Reads HC-SR04 sensors → `/ultrasonic_data`
+4. **`obstacle_avoidance_combined.py`** - Fusion of LiDAR + ultrasonic → robust avoidance
+5. **`slam_explorer.py`** - Automatic SLAM exploration using SLAM Toolbox
 
-LiDAR obstacle detection (sector-based).
-
-2️⃣ obstacle_avoidance_lidar.py
-
-Pure LiDAR-based avoidance → /cmd_vel.
-
-3️⃣ ultrasonic_reader.py
-
-Reads HC-SR04 sensors → /ultrasonic_data.
-
-4️⃣ obstacle_avoidance_combined.py
-
-Fusion of LiDAR + ultrasonic → robust avoidance.
-
-5️⃣ slam_explorer.py
-
-Automatic SLAM exploration using SLAM Toolbox.
-
-rover_description
+### `rover_description`
 
 Contains:
+- **URDF model** (`rover.urdf.xacro`)
+- **Gazebo worlds:**
+  - `empty.world`
+  - `agricultural_world.world`
+- **Launch files:**
+  - `spawn_rover.launch.py`
+  - `agricultural.launch.py`
+  - `localization.launch.py`
+  - `navigation.launch.py`
+  - `lidar_convert.launch.py`
+- **EKF config** → `ekf.yaml`
 
-URDF model (rover.urdf.xacro)
+[🔝 Back to Top](#-autonomous-rover)
 
-Gazebo worlds:
+---
 
-empty.world
+## 📝 Required Edits
 
-agricultural_world.world
+### `setup.py` (rover_obstacle)
 
-Launch files:
-
-spawn_rover.launch.py
-
-agricultural.launch.py
-
-localization.launch.py
-
-navigation.launch.py
-
-lidar_convert.launch.py
-
-EKF config → ekf.yaml
-
-📝 Required Edits
-
-🔝 Back to Top
-
-setup.py (rover_obstacle)
+```python
 entry_points={
     'console_scripts': [
         'obstacle_detector_lidar = rover_obstacle.obstacle_detector_lidar:main',
@@ -175,130 +152,169 @@ entry_points={
         'slam_explorer = rover_obstacle.slam_explorer:main',
     ],
 },
+```
 
-CMakeLists.txt (rover_description)
+### `CMakeLists.txt` (rover_description)
+
+```cmake
 install(
   DIRECTORY urdf meshes config launch worlds
   DESTINATION share/${PROJECT_NAME}
 )
+```
 
-🧱 Build & Environment Setup
+[🔝 Back to Top](#-autonomous-rover)
 
-🔝 Back to Top
+---
 
-Build the workspace
+## 🧱 Build & Environment Setup
+
+### Build the workspace
+
+```bash
 colcon build --packages-select rover_description rover_obstacle
 source install/setup.bash
+```
 
-Export ROS networking settings
+### Export ROS networking settings
+
+```bash
 export ROS_LOCALHOST_ONLY=1
 export ROS_DOMAIN_ID=0
+```
 
-🌍 Simulation in Gazebo
+[🔝 Back to Top](#-autonomous-rover)
 
-🔝 Back to Top
+---
 
-Empty world
+## 🌍 Simulation in Gazebo
+
+### Empty world
+
+```bash
 ros2 launch rover_description spawn_rover.launch.py world:=empty
+```
 
-Agricultural world
+### Agricultural world
+
+```bash
 ros2 launch rover_description agricultural.launch.py
+```
 
-🧭 SLAM, Localization & Navigation
+[🔝 Back to Top](#-autonomous-rover)
 
-🔝 Back to Top
+---
 
-1. SLAM Mapping
+## 🧭 SLAM, Localization & Navigation
+
+### 1. SLAM Mapping
+
+```bash
 ros2 launch rover_description localization.launch.py
 ros2 launch slam_toolbox online_async_launch.py
+```
 
-
-Save map:
-
+**Save map:**
+```bash
 ros2 run nav2_map_server map_saver_cli -f ~/map
+```
 
-2. Localization with Saved Map
+### 2. Localization with Saved Map
+
+```bash
 ros2 launch rover_description localization.launch.py map:=/path/to/map.yaml
+```
 
-3. Navigation (Nav2)
+### 3. Navigation (Nav2)
+
+```bash
 ros2 launch rover_description navigation.launch.py
+```
 
-🧩 Obstacle Avoidance Pipelines
+[🔝 Back to Top](#-autonomous-rover)
 
-🔝 Back to Top
+---
 
-LiDAR-only avoidance
+## 🧩 Obstacle Avoidance Pipelines
+
+### LiDAR-only avoidance
+
+```bash
 ros2 run rover_obstacle obstacle_avoidance_lidar
+```
 
-Ultrasonic-only
+### Ultrasonic-only
+
+```bash
 ros2 run rover_obstacle ultrasonic_reader
+```
 
-Combined LiDAR + Ultrasonic (Recommended)
+### Combined LiDAR + Ultrasonic (Recommended)
+
+```bash
 ros2 run rover_obstacle obstacle_avoidance_combined
+```
 
-SLAM Explorer
+### SLAM Explorer
+
+```bash
 ros2 run rover_obstacle slam_explorer
+```
 
-🖥️ RViz Visualization
+[🔝 Back to Top](#-autonomous-rover)
 
-🔝 Back to Top
+---
+
+## 🖥️ RViz Visualization
 
 Use RViz to visualize robot state, mapping, costmaps, and sensors.
 
-Launch:
-
+**Launch:**
+```bash
 rviz2
+```
 
-✔ Recommended RViz Displays
-Robot Model
-Add → RobotModel
-Topic: /robot_description
+### ✔ Recommended RViz Displays
 
-TF Tree
-Add → TF
+| Display | Type | Topic |
+|---------|------|-------|
+| Robot Model | RobotModel | `/robot_description` |
+| TF Tree | TF | - |
+| LaserScan | LaserScan | `/scan` |
+| Ultrasonic Range | Range | `/ultrasonic_data` |
+| SLAM Map | Map | `/map` |
+| Odometry | Odometry | `/odom` |
+| Global Costmap | Costmap | `/global_costmap/costmap` |
+| Local Costmap | Costmap | `/local_costmap/costmap` |
+| Global Plan | Path | `/plan` |
+| Local Plan | Path | `/local_plan` |
+| IMU | Imu | `/imu/data` |
+| Depth PointCloud | PointCloud2 | `/camera/depth/color/points` |
+| RGB Image | Image | `/camera/color/image_raw` |
 
-LaserScan
-Add → LaserScan
-Topic: /scan
+### ⭐ RViz Recommended Settings
 
-Ultrasonic Range
-Add → Range
-Topic: /ultrasonic_data
+- **Fixed Frame:** `map` (or `base_link` for testing)
+- **Grid:** Enabled
+- **Axes:** Enabled
+- **Frame rate:** 30 FPS
 
-SLAM Map
-Add → Map
-Topic: /map
+[🔝 Back to Top](#-autonomous-rover)
 
-Odometry
-Add → Odometry
-Topic: /odom
+---
 
-Navigation Stack
+## 📄 License
 
-Global Costmap → /global_costmap/costmap
+[Add your license here]
 
-Local Costmap → /local_costmap/costmap
+## 🤝 Contributing
 
-Global Plan → /plan
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-Local Plan → /local_plan
+## 📧 Contact
 
-IMU
-Add → Imu
-Topic: /imu/data
+[Add your contact information here]
 
-Depth Camera (Optional)
+---
 
-PointCloud2 → /camera/depth/color/points
-
-Image → /camera/color/image_raw
-
-⭐ RViz Recommended Settings
-
-Fixed Frame: map (or base_link for testing)
-
-Grid: Enabled
-
-Axes: Enabled
-
-Frame rate: 30 FPS
+**Happy Roving! 🚜✨**
